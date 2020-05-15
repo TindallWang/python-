@@ -1,0 +1,352 @@
+a = [1, 2, 3]
+print(a)
+type(a)
+a
+
+a = {"a": 1, "b": 2}
+#print(a)#隐式调用str方法
+str(a)
+type(a)
+set(a)#支持散列
+
+
+
+import math
+
+class Vector:
+    
+    __slots__ = {'__x', '__y'}#告诉解释器只有这两种变量,这样就无dict属性,
+    #作为一种限定属性的方式，这样就不可以增加属性，节约内存。
+    
+    def __init__(self, x, y):
+        #self.x = x
+        #self.y = y
+        self.__x = float(x)#私有变量
+        self.__y = float(y)
+        
+    @property#将这种方法定义为可读的属性
+    def x(self):
+        return self.__x
+    
+    @property
+    def y(self):
+        return self.__y
+    #对str提供支持
+    def __str__(self):
+        return str(tuple(self))
+    
+    def __iter__(self):#迭代
+        return (i for i in (self.x, self.y))
+    
+    #对repr提供支持
+    def __repr__(self):#self指实例对象
+        """
+        return Vector(x, y)
+        """
+        return f"{type(self).__name__}({self.x}, {self.y})"
+    
+    # 对 hash 提供支持
+    def __hash__(self):
+        
+        return hash(self.x) ^ hash(self.y)
+    
+    # 对 abs 提供支持
+    def __abs__(self):
+        return math.hypot(self.x, self.y)
+    
+    # 对 bool 提供支持
+    def __bool__(self):
+        return bool(abs(self))
+
+v1 = Vector(3, 4)
+print(v1)#隐式调用str
+str(v1)
+for i in v1:
+    print(i)
+
+v1#隐式实现repr函数
+repr(v1)
+set([v1])#支持散列
+hash(v1)
+bool(v1)
+isinstance(v1, Vector)#v1 是 Vector的一个实例
+[i for i in v1]
+v1.x#因为实现hash，x和y分量可以直接读到
+v1.y
+v1.x = 5
+dir(v1) #信息查询
+v1.__dict__#类中的变量放在实例中的dict对象
+
+
+# 受保护的属性和私有属性
+'''
+单下划线开头 _x作为一种约定。python不提供技术支持
+双下划线开头 __y
+单下划线结尾
+'''
+# Vector1, Vector2 都继承于Vector
+# class Vector2d(Vector1, Vector2):
+# 多重继承
+# Vector1().__init__(self, x, y)
+# Vector2().__init__(self, x, y)
+# 这种Vector中的构造函数被调用了多次
+class Vector2d(Vector):
+    
+    def __init__(self, x, y):
+        super().__init__(x, y)#
+        #Vector().__init__(self, x, y)#这种情况多重继承时有问题
+        self.__x = x#不会覆盖父类的x，y。因为名称被改写了防止继承时变量覆盖的问题
+        self.__y = y
+                
+v2 = Vector2d(5, 6)
+dir(v2)
+from array import array
+array??
+array('d', list(range(100)))
+
+
+import math
+from array import array
+import reprlib #省略去表示,上面range(100)很长
+from functools import reduce
+
+class Vector:
+    # N 维 Vector
+    typecode = 'd'
+    
+    def __init__(self, components):
+        self._components = array(self.typecode, components)
+        #self._components = array('d', components)
+        
+    #对str提供支持
+    def __str__(self):
+        return str(tuple(self))
+    
+    def __iter__(self):#迭代
+        return (i for i in self._components)
+    
+    #对repr提供支持
+    def __repr__(self):#self指实例对象
+        """
+        return Vector(1.0, 2.0, 3.0...)
+        """
+        components = reprlib.repr(self._components)
+        print("components:", type(components))
+        print(components)
+        components = components[components.find('['):-1]
+        print("components:", type(components))
+        print(components)
+        return f"{type(self).__name__}({components})"
+    
+    # 对 hash 提供支持
+    def __hash__(self):
+        hash_list = map(lambda x: hash(x), self._components)
+        return reduce(lambda a, b: a ^ b, hash_list, 0)
+    
+    def __eq__(self, v):
+        #if tuple(self) != tuple(v):
+        if len(self) != len(v):
+            return False
+        for a, b in zip(self, v):#zip本身返回一个生成器
+            if a != b:
+                return False
+        return tuple(self) == tuple(v)
+        #return tuple(self) == tuple(self) and all(a == b for a, b in zip(self, v))#将列表中
+        #所有的都得迭代完
+        #return len(self) == len(self) and all(a == b for a, b in zip(self, v))
+        
+    
+    # 对 abs 提供支持
+    def __abs__(self):
+        return math.sqrt(sum(x * x for x in self._components))
+    
+    # 对 bool 提供支持
+    def __bool__(self):
+        return bool(abs(self))
+    
+    def __len__(self):
+        return len(self._components)
+    #索引
+    def __getitem__(self, index):#一种协议
+        #return self._components[index]
+        cls = type(self)
+        if isinstance(index, slice):#判断index是不是slice对象
+            return cls(self._components[index])
+        elif isinstance(index, slice):
+            return self._components[index]
+        else:
+            raise TypeError(f"{cls.__name__} index must be intergers.")
+    # +       
+    def __add__(self, v):
+        cls = type(self)
+        return cls([x + y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+    #左加
+    def __radd__(self, v):
+        cls = type(self)
+        return self + v
+    # * scalar
+    def __mul__(self, scalar):
+        cls = type(self)
+        return cls([x * scalar for x in self])
+    def __rmul__(self, scalar):
+        cls = type(self)
+        return self * scalar
+    # dot
+    def __matmul__(self, v):
+        cls = type(self)
+        return sum([a * b for a, b in itertools.zip_longest(self, v, fillvalue = 1)])
+    def __rmatmul__(self, v):
+        return self @ v
+
+v = Vector(range(10))
+v#只希望看到一些描述类的信息
+print(v)#描述实例的全部信息
+v1 = Vector([1, 2, 3])
+v1
+v2 = Vector([1, 2, 3])
+v2
+v1 == v2#运算符重载 # output：True
+id(v1)
+id(v2)
+map(lambda x: hash(x), range(10))#map生成器
+m = map(lambda x: hash(x), range(10))
+next(m)
+hash(v)
+len(v)
+v[0]#索引
+v[1:5]#不太符合预期,期待返回Vector([1.0, 2.0, 3.0, 4.0])
+v[1:5]
+l = [1, 2, 3, 4, 5]
+l[1:2]
+
+
+class Seq:
+    
+    def __getitem__(self, index):
+        return index
+        
+s =Seq()
+s[1:2]
+s[1]
+slice??
+l[s[1:3]]
+isinstance(v, list)
+type(list)
+a = set([1, 2, 3])
+a #output：{1， 2， 3}
+b = set([1, 3, 2])
+b
+a == b #output：True
+type(a) # output：set
+a = [1, 2, 3]
+b = [1, 3, 2]
+tuple(a) == tuple(b) # output：False
+tuple.__eq__??
+list.__eq__??
+#搜索 python list.__eq__ python doc
+tuple([1, 2, 3]) == ([1, 3, 2]) #output：False
+
+
+
+# 多重继承与Mixin
+import itertools
+"""
+class PlusMixin:
+#class Plus:
+    
+    def plus(self, v):
+        cls = type(self)
+        return cls([x + y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+
+class Minus:
+    
+    def minus(self, v):
+        cls = type(self)
+        return cls([x - y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+"""
+class CalculabilityMixin:
+    # +
+    def plus(self, v):
+        cls = type(self)
+        return cls([x + y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+    # -
+    def minus(self, v):
+        cls = type(self)
+        return cls([x - y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+    # @点乘 python3.5之后支持该操作
+    def dot(self, v):
+        cls = type(self)
+        return sum([a * b for a, b in itertools.zip_longest(self, v, fillvalue = 1)])
+  
+itertools.zip_longest??
+
+
+
+#class Vector2d(Vector, PlusMixin):#多重继承
+#class Vector2d(PlusMixin, Minus, Vector): 
+#class Vector2d(CalculabilityMixin, Vector):
+class Vector2d(Vector):
+    def __init__(self, *args):
+        #super().__init__([x, y])
+        #self._x = x
+        #self._y = y
+        #self._z = z
+        components = list(args) if len(args) > 1 else args[0]
+        super().__init__(components)
+        self._x = components[0]
+        self._y = components[1]
+        
+v3 = Vector2d(1, 2)
+v4 = Vector2d(3, 4)
+v3.plus(v4)
+v4.minus(v3)
+v3.dot(v4)
+v3 = Vector2d(1, 2)
+v3
+abs(v3)
+v4 = Vector([1, 5])
+v3.plus(v4)#继承于CalulabilityMixin中的add
+Vector2d.__mro__
+v3 + v4#继承于Vector中的add
+v3 * 10
+v3 @ v4#dot
+v3 + [3, 5]
+[3, 5] + v3#报错,要实现左加
+[3, 5] @ v3
+
+# 查询
+#google python __radd__ python doc
+#docs.python.org python官方文档搜python doc，搜关键词找到
+#程序报错，直接google，排名靠前的页面， 尤其在stackoverflow上看
+#google style guide python 
+#Google python 风格指南 https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/
+#google python 计算向量夹角
+#google python cos function
+#google supervisior
+
+def log():
+    print("ok")
+    
+class Vector2d(Vector):
+    
+    def __init__(self, x, y):
+        super().__init__([x, y])
+        self._x = x
+        self._y = y
+        
+    @classmethod#类方法，和类绑定的防范，而不是和self绑定的,希望在构造函数之前做些事情
+    def build_from_other(cls, other_components):#cls类本身，而不是self实例本身
+        if isinstance(other_components, list):
+            x, y = other_components
+        return cls(x, y)
+    
+    @staticmethod#静态方法，和类完全没关系，在类的外面定义也是一样的，和实例也无关系。
+    #在继承中是有用的
+    def log():
+        print("ok")
+        
+v = Vector2d(1, 2)
+v.log()
+v1 = Vector2d([1, 2])
+Vector2d.build_from_other([1, 2])
+Vector2d.build_from_other([1, x])
