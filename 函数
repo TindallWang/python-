@@ -1,0 +1,362 @@
+# 函数
+def factorial(n):
+    return 1 if n < 2 else n * factorial(n - 1)
+    
+factorial(10)
+factorial.__doc__
+print(type(factorial))
+
+# 实例化
+fact = factorial
+fact
+fact(10)
+
+
+def make_averager():
+    nums = []
+    def averager(new_value):
+        nums.append(new_value)
+        total = sum(nums)
+        return total / len(nums)
+    return averager
+    
+avg = make_averager()
+avg
+avg(3)
+
+
+
+
+# 列表
+usernames = ["sopha", "emma", "olivia", "ave"]
+usernames_upper = [name.capitalize() for name in usernames]
+usernames_upper
+
+num_list = [1, 2, 4, 5, 7]
+list(map(factorial, num_list))
+
+sorted(usernames, key = lambda x: x[0])
+
+result = [factorial(num) for num in num_list]
+result
+
+# 字典
+name_dict = {name: len(name) for name in usernames}
+name_dict
+filter??
+list(map(factorial, filter(lambda n: n % 2, num_list)
+        )
+    )
+result = [factorial(num) for num in num_list if num % 2]
+result
+
+name_dict = {name: len(name) for name in usernames if len(name) > 3}
+name_dict
+callable(factorial)#true 对象可以被调用
+
+
+
+
+
+# 累
+class Suprise()
+    def __init__(self, items):
+        self._items = items
+    
+    def pick(self):
+        try:
+            return self._items
+            
+class Foo():
+    def __init__(self, num):#self 指代这个Foo类本身
+        self.__num = num #给类的实例传一个变量
+    
+    def foo(self):
+        print(self.num)
+    
+    def get_num(self):
+        return self._num
+    
+    def set_num(self, new_num):
+        self._num = new_num
+        
+foo = Foo(1)# Foo.__init__(num)
+foo.get_num()
+foo.set_num(10)
+foo.get_num()
+foo.__num
+print(type(foo))
+
+
+class Suprise():
+    def __init__(self, items):
+        self._items = items
+    
+    def pick(self):
+        try:
+            return self._items.pop()
+        except Exception as e:
+            #raise e
+            print(str(e))
+    
+    def __call__(self):
+        return self.pick()
+        
+  s = Suprise(["dark chocolate", "white", "milk", "alcoholic"])
+  callable(s)
+  s()#实现__call__方法本身也是可以被调用的
+  
+  
+  # 打包 ×元祖
+  def avg(first, *rest):###未知参数，*号打包，把所有东西扔到元组这个容器中，*把剩余参数打包
+    print(rest, type(rest))
+    return (first + sum(rest)) / (1 + len(rest))
+  
+  avg(1, 2, 3, 4)
+  avg(1, 2)
+  avg(1, 5)
+  
+  def kws_f(a = None, b = None):#关键字参数，根据关键字来传参
+    return a + b
+    
+  kws_f(a = 1, b = 2)
+  kws_f(b = 3, a = 4)
+  
+  # 打包 **字典
+  def kws_func(**kwargs):
+    print(kwargs, type(kwargs))
+    
+  kws_func(a = 1, b = 2, c = 3, d = 4)
+  
+  
+  
+  
+# 生成HTML标签
+# <p>hello</p>
+# <item class = '' size = 'small'>a</item>
+#<item url = 'car.jpg'>
+def make_element(name, *contents, cls = None, **kwargs):
+    if cls:
+        kwargs["class"] = cls
+        
+    print("contents", contents)
+    print("kwargs", kwargs)
+        
+    pairs = [f"{attr} = {value}" for attr, value in kwargs.items()]#python中最新的格式化
+    #字符串的方式format
+    attr_str = ' '.join(pairs)#拼接,以空格为分隔符，将pairs所有元素合并为一个新的字符串
+    print("pairs:", pairs)
+    print("attr_str:", attr_str)
+    
+    if not contents:
+        return f"<{name} {attr_str}/>"
+    
+    elements = [f"<{name} {attr_str}>{content}<{name}/>" for content in contents]
+    return '\n'.join(elements)
+    
+    return sum([num for key, num in kwargs.items()])
+    
+make_element("p", "hello")
+make_element("p", "hello", "world")
+print(make_element("p", "hello", "world"))
+print(make_element("p", "hello", "world", cls = "sidebar", size = "small"))
+print(make_element('img', cls = 'pic-frame', src = 'a.jpg'))
+
+
+d = {"a": 1, "b": 2, "c": 3}
+for k, v in d.items():
+    print(k, v)
+    
+
+#格式化字符串    
+a = 1
+b = 2
+c = 3
+f"{a} + {b} = {c}"#{}用来传变量,其他部分正常作为字符串就可以，f就是去格式化字符串
+
+
+from functools import reduce, partial
+from operator import add, mul
+
+add??
+add(1, 2)
+add(2, 2)
+
+def fact(n):
+   return reduce(lambda a, b: a * b, range(1, n + 1))
+fact(1)
+fact(6)
+
+def fact(n):
+    return reduce(mul, range(1, n + 1))
+reduce??
+fact(6)
+mul??
+
+triple = partial(mul, 3)#冻结mul的第一个参数为3
+triple(4)
+
+image_make = partial(make_element, 'img', cls = 'pic-frame')
+image_make(src = 'car.png')
+item_make = partial(make_element, "item", size = "small")
+print(item_make("A", "B", "C"))
+
+
+
+
+# 多返回值
+#解包
+def test():
+    return 1, 2
+a, b = test()#解包
+result = test()
+print(type(result))
+a, b, c = [1, 2, 3]
+
+
+d1 = {"a": 1, "b": 2}
+d2 = {"c": 3, "d": 4}
+new_d = {**d1, **d2}#打包，解包在python3中加入
+new_d
+
+
+装饰器
+#装饰器本质：
+#在不改变函数的签名，返回值的情况下，增加额外的功能
+import time
+from functools import wraps#wraps装饰器
+#def build_func_with_time_record(func):
+def record_run_time(func):
+    """
+    在装饰器函数返回之前
+    通过获取func的属性，并储存
+    在返回的最终的函数中设置上述属性
+    """
+    @wraps(func)#保存被包装函数的一些原始信息
+    #def wrapper(a, b):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        #result = func()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"Function {func.__name__} cost {end - start}")
+        return result
+    
+    return wrapper#返回打包函数
+
+def func_foo():
+    time.sleep(2)
+    return 1 + 1
+    
+new_func = build_func_with_time_record(func_foo)#显示调用
+new_func()
+
+
+# @语法糖, 用过语法糖不需要像上面那样去显示调用赋值
+#1将包装函数传给装饰函数，2最终执行返回新的函数
+#装饰器不会去修改函数的返回结果
+@build_func_with_time_record
+def func_bar(a, b):
+    time.sleep(2)
+    return a + b
+    
+func_bar(10, 20)
+
+
+
+
+#@build_func_with_time_record
+@record_run_time
+def make_element(name, *contents, cls = None, **kwargs):#被包装的函数
+    """
+    make_element
+    
+    """
+    
+    if cls:
+        kwargs["class"] = cls
+        
+    print("contents", contents)
+    print("kwargs", kwargs)
+        
+    pairs = [f"{attr} = {value}" for attr, value in kwargs.items()]#python中最新的格式化
+    #字符串的方式format
+    attr_str = ' '.join(pairs)#拼接,以空格为分隔符，将pairs所有元素合并为一个新的字符串
+    print("pairs:", pairs)
+    print("attr_str:", attr_str)
+    
+    if not contents:
+        return f"<{name} {attr_str}/>"
+    
+    elements = [f"<{name} {attr_str}>{content}<{name}/>" for content in contents]
+    return '\n'.join(elements)
+    
+print(make_element("p", "hello", "world", cls = "sidebar", size = "small", color = "red"))
+make_element.__doc__
+make_element.__name__#被包装的函数丢失了一些原始信息，把被包装的函数一些状态给改了
+from inspect import signature#函数签名
+signature(make_element)#查看函数签名
+
+
+
+# make_element_without_decorater == make_element_with_decorater
+import logging
+
+logging.basicConfig(format='%{asctime}s %{name}s %{levelname}s %{message}s')
+logging.root.setLevel(logging.NOTSET)
+
+#带参数的装饰器
+def logged(level, name = None, message = None):
+    
+    def decorate(func):
+        
+        logname = name if name else func.__name__
+        log = logging.getLogger(logname)
+        
+        logmsg = message if message else f"Function<{func.__name__}> is running"
+        
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            log.log(level, logmsg)
+            return func(*args, **kwargs)#最终在这里呗执行
+        return wrapper
+    return decorate
+    
+@logged(level = logging.DEBUG)#先执行logged返回decorate，decorate最终执行wrapper
+def make_element(name, *contents, cls = None, **kwargs):#被包装的函数
+    """
+    make_element
+    
+    """
+    
+    if cls:
+        kwargs["class"] = cls
+        
+    print("contents", contents)
+    print("kwargs", kwargs)
+        
+    pairs = [f"{attr} = {value}" for attr, value in kwargs.items()]#python中最新的格式化
+    #字符串的方式format
+    attr_str = ' '.join(pairs)#拼接,以空格为分隔符，将pairs所有元素合并为一个新的字符串
+    print("pairs:", pairs)
+    print("attr_str:", attr_str)
+    
+    if not contents:
+        return f"<{name} {attr_str}/>"
+    
+    elements = [f"<{name} {attr_str}>{content}<{name}/>" for content in contents]
+    return '\n'.join(elements)
+    
+print(make_element("p", "hello", "world", cls = "sidebar", size = "small", color = "red"))
+
+@logged(logging.INFO)
+def func_foo(a, b):
+    return a + b
+    
+#@logged(logging.DEBUG)
+@logged(logging.WARNING)
+def func_bar(a, b):
+    return a + b
+
+func_foo(1, 2)
+
