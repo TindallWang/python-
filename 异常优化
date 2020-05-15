@@ -463,13 +463,3 @@ class Vector2d(Vector):
         super().__init__(components)
         self._x = components[0]
         self._y = components[1]
-
-
-
-
-
-
-
-
-
-
