@@ -1,0 +1,173 @@
+# 并行编程模型
+#### -多线程模型
+###### 1.单个cpu启动一个处理流程之后，网易云播放音乐的同时可以进行搜索，展示画面。在一个主程序中可以同时做各种不同的操作。对于每个操作都有清晰的一个线程。
+2.线程是进程的组件,一个进程中可以有多个线程，多个线程共享父进程的内存空间。由os调度。如：浏览器、播放器。
+3."假多线程"， 全局解释器锁（GIL）
+#### -多进程模型
+##### 1.拥有独立内存空间，充分利用多核，开销比线程大
+
+import threading #线程包
+import multiprocessing #进程包
+import random
+from concurrent import futures
+
+
+# cpu 密集型任务 //计算型任务
+# IO  密集型任务 //读取文件、下载网页、键盘输入。这个任务不是一下完成，会有等待时间。
+# IO操作用线程好
+
+# 多线程 ->> IO密集型的任务，cpu密集型不适用,需要自己去测试使用数量
+# 多进程 ->> cpu密集型任务，IO任务也可以。数量一般默认核数.
+results = []
+def compute():
+    results.append(
+        sum([random.randint(1, 100) for _ in range(10000)])
+    )
+
+workers = [threading.Thread(target = compute) for _ in range(8)] #启动8个线程
+
+for work in workers:
+    work.start() #启动它
+for work in workers:
+    work.join()
+
+print(f"Result {results}")
+
+
+
+##### time python python4.py #查看耗时
+results = []
+def compute(n):
+    return sum([random.randint(1, 100) for _ in range(10)])
+pool = multiprocessing.Pool(6) #创立6个进程
+print(f"Result {pool.map(compute, range(8))}")
+
+pool.map??
+
+
+# 同步问题
+import time
+from threading import Lock #线程中导入锁
+
+# 加锁
+class Account:
+    
+    def __init__(self, money = 100):
+        self._lock = Lock() # 加锁
+        self.money = money
+        
+    def save(self, delta):
+        with self._lock: #也是一种上下文管理器
+            self.money += delta
+    def withdraw(self, delta):
+        with self._lock:
+            self.money -= delta
+
+account = Account(500)
+
+def change(n):
+    account.save(n)
+    account.withdraw(n)
+    
+def task(n):
+    for _ in range(10):
+        change(n)
+# 启动4个线程
+tasks = [threading.Thread(target = task, args = (money, )) for money in [300, 400, 500, 600]]
+for task in tasks:
+    task.start()
+for task in tasks:
+    task.join()
+print(account.money) #金额随机，加锁解决这种问题
+#for money in [300, 400, 500, 600]:
+    #task(money)
+print(account.money)#金额500
+
+#解决死锁/获取锁的时候按顺序获取
+class Acquire:
+    def __init__(self, *locks):
+        self._locks = sorted(locks, key = lambda x: id(x))
+    def __enter__(self):
+        for lock in self._locks:
+            lock.acquire()
+    def __exit__(self):
+        for lock in reversed(self._locks, exe_type, exe_value, trace):
+            lock.release()
+    
+def philosopher(left, right):
+    while True:
+        """
+        with left.acquire:
+            with right.acquire:
+                print(f"Thread {threading.currentThreader()} is eating")
+        """
+        with Acquire(left, right):
+            print(f"Thread {threading.currentThreader()} is eating")
+chopsticks = [threading.Lock() for _ in range(5)] # 定义5把锁            
+for i in range(5):
+    t = threading.Thread(target = philosopher, 
+                         args = (chopsticks[i], chopsticks[(i + 1) % 5]))
+    t.start()
+    t.join()
+    
+    
+
+
+## 分布式 
+##### CAP-Consistency,Availablity,Partition-Tolerance
+可用性和一致性的矛盾
+###### 分布式架构介绍
+###### Celery、Ray
+消息中间件、任务执行单元、任务执行结果存储
+
+docker ps #启动4台虚拟机
+
+from celery import Celery
+import time
+
+broker = 'redis://172.17.0.6:6379'
+bockend = 'redis://172.17.0.6:6379'
+
+app = Celery('task_demo', broker-broker, backend-broker, backend-backend)
+
+@app.task
+def add(x, y):
+    time.sleep(2)
+    return x + y
+
+from tasks import add
+r = add.delay(1, 2)
+r.ready()
+r.result
+r.get()
+futures = [add.delay(x, y) for x, y in zip(range(10), range(10, 20))]
+for f in futures:
+    f.ready()
+    
+step1:
+@app.task
+def get_urls(url):
+    pass
+    send redis / result
+@app.task
+def get_page(url):
+    pass
+    send redis / MQ
+@app.task
+def content_parse(page):
+    pass
+    send Mysql / MongoDB
+    
+Master:
+定义调度逻辑，发送任务
+"""
+celery -A tasks worker -n worker2 --loginfo-info
+celery -A tasks worker -n worker1 --loginfo-info
+"""
+
+### 反爬虫
+##### 1.代理
+##### 2.User-agent
+##### 3.验证码(相应的包) （深度学习 -》验证码识别图）JS、Python
+##### 4.加密 （js混淆）
+##### 5.chrome
