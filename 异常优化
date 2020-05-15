@@ -1,0 +1,475 @@
+# 简单模板
+try:
+    pass
+except:
+    pass
+else:
+    pass
+
+## finally模块:执行这个try语句块，不管怎么样最终肯定执行finally这个语句块,
+#中途有错误也会去执行错误,finally肯定会被执行
+try:
+    pass
+except:
+    pass
+finally:
+    pass
+
+
+## 自定义异常类
+def div(a, b):
+    #print(a / b)
+    try:
+        print(a / b)
+    #except ZeroDivisionError as e:# 捕获已知错误
+    except (ZeroDivisionError, TypeError):#捕获多个异常
+        print("args is invalid")
+        #print(str(e))
+        print("Error: b should not be 0")
+    except Exception as e:# 捕获其他未知错误,在python中所有的错误都继承于exception这个基类
+        print(f"Unexcepted Error: {e}")
+        #raise e#直接将错误抛出，报错
+        raise Exception('Unexcepted Error')
+    else:#无错误执行这个语句块
+        print('no error')
+
+div(1, 2)
+div(1, 0)
+div(1, 0)
+div(1, 'a')
+
+!ls
+
+#f = open('tt.csv')
+#f = open('stage1.txt')
+try:
+    f = open('stage1.txt')
+    for lines in f.readlines():
+        print(lines)
+except Exception as e:
+    print(e)
+finally:
+    f.close()
+    
+f
+
+import csv
+fr = csv.reader(f)
+fr.readrow
+f.readline()
+f.readline()
+f.closed
+
+
+# 上下文管理器,实现了上下文管理的协议就是一个上下文管理器。
+# 实现了一个协议就是这个协议的东西
+with open('stage1.txt') as fr:
+    for lines in fr.readlines():
+        print(lines)
+fr
+fr.closed #output: True
+
+# 上下文管理器
+实现了这两个方法的python类，就可以称为上下文管理器
+'''
+实现了
+__enter__
+__exit__
+就是上下文管理器
+'''
+总结：
+1.调用方法A
+2.执行一段代码
+3.调用方法B
+
+class Context:
+    
+    def __init__(self, file):
+        self._file = file
+        self._file_desc = None
+    
+    def _open(self):
+        pass
+    
+    def __enter__(self):
+        """
+        """
+        self._file_desc = self._open(self._file)
+        return file_desc
+    
+    def __exit__(self):
+        self.file_desc.closed()
+        
+    import time
+
+class TimeRecord:
+    #相当于资源管理，例如网络连接读取，文件读取
+    def __init__(self):
+        self._start = 0
+        self._end = 0
+    
+    def __enter__(self):#进入with语句块，执行enter逻辑
+        self._start = time.time()
+    
+    def __exit__(self, exc_type, exc_value, traceback):#with语句块执行完毕后退出，执行exit
+        print("args:", exc_type, exc_value, traceback)
+        self._end = time.time()
+        print(f"function cost {self._end - self._start}.")
+        
+def f(n):
+    return 1 if n < 2 else f(n - 1) + f(n - 2)
+with TimeRecord():
+    f(5)
+    
+# 自定义异常类 baseException一般给编译器用
+# 网络类的应用工具
+# 定义有意义的异常类
+class NetworkError(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.args = args
+        self.kwargs = kwargs
+        
+    def method(self):
+        pass
+    
+class HostnameError(NetworkError):
+    pass
+    """
+    if not valid(hostname):
+        raise HostnameError('host name is invalid')
+    """
+
+class TimeoutError(NetworkError):
+    pass
+class ProtocolError(NetworkError):
+    pass
+
+class Tool:
+    def __init__(self):
+        pass
+    
+    def _recv(self):
+        pass
+    
+    def recv(self):
+        try:
+            msg = self._recv
+            return msg
+        except Exception:
+            raise TimeoutError
+            
+try:
+    # tool是我们实现的网络工具,提供他人去使用
+    tool = Tool()
+    msg = tool.recv()
+#except HostnameError as e:
+except TimeoutError as e:
+    print(str(e))
+    
+d = {'a': 1}
+d['c']
+l = [1, 2]
+l[3]
+Exception??
+
+
+
+
+# 优化
+#O(n ** 2)hotspot
+# 性能优化 -- 时间
+tools: cProfile 内置
+ 使用函数处理
+ #time python filename.py # 查看程序运行时间
+ #1.全部与局部变量，局部变量操作比全局变量快
+ #- dict O(1)
+ #- list O(n)
+ ### 1.全部与局部变量，局部变量操作比全局变量快
+ 
+ s = """
+print("args:", exc_type, exc_value, traceback)
+        self._end = time.time()
+        print(f"function cost {self._end - self._start}.")
+"""
+str_list = s.split(' ')
+str_list
+len(str_list)
+
+
+from random import shuffle
+from copy import deepcopy
+
+new_list = deepcopy(str_list)
+shuffle(new_list)
+targets = new_list[20:30]
+targets
+
+
+def test(items, targets):
+    count = 0
+    for i in range(1000000):
+        for item in items:
+            if item in targets:
+                count += 1
+                
+with TimeRecord():
+    test(str_list, targets)
+    
+str_dict = dict.fromkeys(str_list, 1)
+str_dict
+def test_with_dict(items, targets):
+    count = 0
+    for i in range(1000000):
+        for item in items:#只查找key，value不关心
+            if item in targets:
+                count += 1
+                
+with TimeRecord():
+    test_with_dict(str_dict, targets)
+    
+    
+# set 
+#- set(a) & set(b): 查找 a，b 交集
+
+def test_without_set(items, targets):
+    l = []
+    for _ in range(1000000): # 用_(占位符)去代替，不需要去使用
+        for item in items:
+            for t in targets:
+                if item == t:
+                    l.append(item)
+                    
+with TimeRecord():
+    test_with_set(str_list, targets)
+    
+def test_with_set(items, target):
+    l = []
+    for _ in range(1000000):
+        l.append(set(items) & set(target))
+        
+with TimeRecord():
+    test_with_set(str_list, targets)
+    
+def test_without_generate(items): # 生成器
+    l = []
+    for _ in range(1000000):
+        for item in items:
+            l.append(item)
+            
+def test_with_generate(items): #  生成器
+    l = []
+    for _ in range(1000000):
+        t = (item for item in items)
+        l.append(l)
+        
+with TimeRecord():
+    test_without_generate(str_list)
+    
+with TimeRecord():
+    test_with_generate(str_list)#耗时应该少
+    
+ 
+ 
+# 性能优化-内存
+## tools memory_profiler (需要另外安装)
+### python -m cProfile filename.py #分析程序时间耗在哪了
+### python -m cProfile -s cumtime filename.py #将耗时时间排序
+###  __slots__ #优化内存
+### vectors = [Vector(1, 2) for _ in range(100)] # 生成多个实例类
+#### '__slots__'
+#### 缓存（这个概念）
+### pip install memory-profile # 安装memory-profile
+### pip list | grep memory # 查看memory包的信息
+### python -m memory_profiler filename.py # 查看内存消耗
+
+### 在代码中
+### from memory_profiler imoport profile# 导入包
+### @profile # 加装饰器
+### def main():
+
+_CACHE = {}
+from math import sin
+def cached_sin(x):
+    if x not in _CACHE:
+        _CACHE[x] = sin(x)
+        return _CACHE[x]
+        
+cached_sin(3)
+_CACHE
+
+from functools import lru_cache # 缓存装饰器
+def fib(n):
+    return 1 if n < 2 else fib(n - 1) + fib(n - 2)
+
+fib(5)
+with TimeRecord():
+    r = fib(35)
+    print(r)
+    
+lru_cache??
+
+@lru_cache(2 ** 5) # 缓存装饰器 2的5次方个变量
+def fib_with_cache(n):
+    return 1 if n < 2 else fib_with_cache(n - 1) + fib_with_cache(n - 2)
+
+with TimeRecord():
+    fib_with_cache(35)
+
+# assert l == l #断延
+def add(a, b):
+    return a + b
+assert add(1, 2) == 3
+
+
+
+# 项目打包
+### 打包工具 setuptools
+# vim vector/vector/vector.py
+# vim vector/vector/__init__.py
+"""
+from vector import Vector, Vector2d
+"""
+# ll vector
+# brew install tree #安装tree
+# cd vector
+# ll
+# ll vector
+# pip list | grep setuptools 查看包的情况
+# vim setup.py 在vector目录中和vector/vector同一目录
+"""
+try:
+    from pip._internal.req import parse_requirements #导入处理依赖的工具
+except ImportError:
+    from pip.req import parse_requirements #在不同的python中可能会出错,兼容性问题
+
+from setuptools import (
+    find_packages,
+    setup,
+)
+
+requirements = [str(ir.req) for ir in parse_requirements("requirements.txt", session = Fales)]
+
+setup(
+    name = 'vector',
+    version = '0.0.1',
+    description = 'vector',
+    packages_find_packages(exclude = []),
+    author='rammbo',
+    author_email='xxx@gmail.com',
+    license='Apache License v2',
+    package_data={'': ['*.*']},
+    url='', #项目可能有地址
+    install_requires=requirements
+    zip_safe=False
+    classifiers=[
+        'Programming Language :: Python',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: Unix',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ],   
+)
+"""
+
+# vim requirements.txt 项目依赖
+"""
+requests #一个网络包
+"""
+# python setup.py install #直接安装
+# pip list | grep vector
+"""
+vector  0.0.1 #代表安装进来了
+"""
+# from vector import Vector, Vector2d
+# v = Vector2d(1, 2) #导入成功
+
+打包上传，发送
+# python setup.py sdist #上传到pip的官网
+# ll
+# ll dist/
+"""
+vector-0.0.1.tar.gz #打包成功
+"""
+# vim -/.piprc #pip官网
+# vim -/.pip/pip.conf
+# vim -/.pip/piprc
+
+# pip freeze > requirements.txt #freeze的requirements.txt文件信息
+# vim requirements.txt
+
+## vector.py文件
+import math
+from array import array
+import reprlib #省略去表示,上面range(100)很长
+from functools import reduce
+
+class Vector:
+    # N 维 Vector
+    typecode = 'd'
+    
+    def __init__(self, components):
+        self._components = array(self.typecode, components)
+        #self._components = array('d', components)
+        
+    #对str提供支持
+    def __str__(self):
+        return str(tuple(self))
+    
+    def __iter__(self):#迭代
+        return (i for i in self._components)
+    
+    #对repr提供支持
+    def __repr__(self):#self指实例对象
+        """
+        return Vector(1.0, 2.0, 3.0...)
+        """
+        components = reprlib.repr(self._components)
+        print("components:", type(components))
+        print(components)
+        components = components[components.find('['):-1]
+        print("components:", type(components))
+        print(components)
+        return f"{type(self).__name__}({components})"
+    
+    # 对 hash 提供支持
+    def __hash__(self):
+        hash_list = map(lambda x: hash(x), self._components)
+        return reduce(lambda a, b: a ^ b, hash_list, 0)
+    
+class CalculabilityMixin:
+    # +
+    def plus(self, v):
+        cls = type(self)
+        return cls([x + y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+    # -
+    def minus(self, v):
+        cls = type(self)
+        return cls([x - y for x, y in itertools.zip_longest(self, v, fillvalue = 0)])
+    # @点乘 python3.5之后支持该操作
+    def dot(self, v):
+        cls = type(self)
+        return sum([a * b for a, b in itertools.zip_longest(self, v, fillvalue = 1)])
+    
+class Vector2d(Vector):
+    def __init__(self, *args):
+        #super().__init__([x, y])
+        #self._x = x
+        #self._y = y
+        #self._z = z
+        components = list(args) if len(args) > 1 else args[0]
+        super().__init__(components)
+        self._x = components[0]
+        self._y = components[1]
+
+
+
+
+
+
+
+
+
+
