@@ -1,0 +1,15 @@
+创建分支并上传git
+git init
+git remote add origin http://opensource.cnsuning.com/ai.face/SnFaceQualityDetect_official
+git checkout -b 分支名
+git add *
+git commit -m "init code"
+git push -u origin master
+
+
+docker run -it -v C:\Users\Administrator\Desktop\fire\smog:/home tensorflow2trt /bin/bash
+scp -r C:\Users\Administrator\Desktop\fire\smog einai@192.168.10.10:/home/einai/WT/Desktop/
+
+局域网连接
+inetcpl.cpl ,4
+https://p.tunpac.com/an.zhu/57452275.pac
